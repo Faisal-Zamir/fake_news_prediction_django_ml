@@ -272,30 +272,41 @@
         </div>
         
         <div class="row g-0">
-            <!-- Input Section -->
+         <!-- Input Section -->
             <div class="col-md-6 input-section">
                 <h3 class="mb-4">Enter News Content</h3>
                 
-                <div class="mb-3">
-                    <textarea class="form-control news-input" id="newsText" placeholder="Paste or type the news article content here..."></textarea>
-                </div>
-                
-                <div class="instructions">
-                    <h6><i class="fas fa-info-circle me-2"></i>Tips for Better Analysis:</h6>
-                    <ul class="mb-0 ps-3">
-                        <li>Include complete article text for accurate analysis</li>
-                        <li>Avoid very short texts (less than 50 characters)</li>
-                        <li>Include source information if available</li>
-                        <li>Check for proper grammar and spelling</li>
-                    </ul>
-                </div>
-                
-                <div class="d-grid mt-4">
-                    <button class="btn btn-primary btn-lg" id="analyzeBtn">
-                        <i class="fas fa-search me-2"></i>Analyze News
-                    </button>
-                </div>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea 
+                            class="form-control news-input" 
+                            id="newsText" 
+                            name="news_text" 
+                            placeholder="Paste or type the news article content here..."
+                            rows="6"
+                            required
+                        ></textarea>
+                    </div>
+                    
+                    <div class="instructions">
+                        <h6><i class="fas fa-info-circle me-2"></i>Tips for Better Analysis:</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>Include complete article text for accurate analysis</li>
+                            <li>Avoid very short texts (less than 50 characters)</li>
+                            <li>Include source information if available</li>
+                            <li>Check for proper grammar and spelling</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                            <i class="fas fa-search me-2"></i>Analyze News
+                        </button>
+                    </div>
+                </form>
             </div>
+  
             
             <!-- Result Section -->
             <div class="col-md-6 result-section">
@@ -347,8 +358,8 @@
                         <h5>Analysis Details</h5>
                         <ul class="list-group" id="analysisDetails">
                             <li class="list-group-item">Content length: <span id="contentLength">0</span> characters</li>
-                            <li class="list-group-item">Sentiment: <span id="sentiment">Neutral</span></li>
-                            <li class="list-group-item">Subjectivity: <span id="subjectivity">Medium</span></li>
+                            <!-- <li class="list-group-item">Sentiment: <span id="sentiment">Neutral</span></li>
+                            <li class="list-group-item">Subjectivity: <span id="subjectivity">Medium</span></li> -->
                         </ul>
                     </div>
                 </div>
@@ -373,128 +384,120 @@
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const newsText = document.getElementById('newsText');
-            const analyzeBtn = document.getElementById('analyzeBtn');
-            const defaultMessage = document.getElementById('defaultMessage');
-            const resultContainer = document.getElementById('resultContainer');
-            const resultCard = document.getElementById('resultCard');
-            const resultIcon = document.getElementById('resultIcon');
-            const resultText = document.getElementById('resultText');
-            const resultDescription = document.getElementById('resultDescription');
-            const confidenceFill = document.getElementById('confidenceFill');
-            const confidenceValue = document.getElementById('confidenceValue');
-            const warningBox = document.getElementById('warningBox');
-            const warningText = document.getElementById('warningText');
-            const realScore = document.getElementById('realScore');
-            const fakeScore = document.getElementById('fakeScore');
-            const contentLength = document.getElementById('contentLength');
-            const sentiment = document.getElementById('sentiment');
-            const subjectivity = document.getElementById('subjectivity');
-            
-            // Analyze button click event
-            analyzeBtn.addEventListener('click', function() {
-                const newsContent = newsText.value.trim();
-                
-                if (!newsContent) {
-                    alert('Please enter some news content to analyze.');
-                    return;
-                }
-                
-                if (newsContent.length < 50) {
-                    alert('Please enter at least 50 characters for accurate analysis.');
-                    return;
-                }
-                
-                // Show loading state
-                analyzeBtn.disabled = true;
-                analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
-                
-                // Simulate API call
-                setTimeout(function() {
-                    // Generate random results for demonstration
-                    const isFake = Math.random() > 0.5;
-                    const confidence = Math.floor(Math.random() * 40) + 60; // 60-99%
-                    const realPercentage = isFake ? 100 - confidence : confidence;
-                    const fakePercentage = isFake ? confidence : 100 - confidence;
-                    
-                    // Update UI with results
-                    updateResults(isFake, confidence, realPercentage, fakePercentage, newsContent);
-                    
-                    // Show result container
-                    defaultMessage.style.display = 'none';
-                    resultContainer.style.display = 'block';
-                    
-                    // Reset button
-                    analyzeBtn.disabled = false;
-                    analyzeBtn.innerHTML = '<i class="fas fa-search me-2"></i>Analyze News';
-                }, 2000);
-            });
-            
-            function updateResults(isFake, confidence, realPercentage, fakePercentage, content) {
-                // Update main result display
-                if (isFake) {
-                    resultCard.className = 'result-card fake-news';
-                    resultIcon.className = 'fas fa-exclamation-triangle result-icon fake-icon';
-                    resultText.className = 'result-text fake-text';
-                    resultText.textContent = 'FAKE NEWS';
-                    resultDescription.textContent = 'This content shows signs of potential misinformation.';
-                    
-                    confidenceFill.className = 'confidence-fill fake-fill';
-                    confidenceFill.style.width = confidence + '%';
-                    
-                    // Show warning
-                    warningBox.style.display = 'block';
-                    warningText.textContent = generateFakeNewsWarning();
-                } else {
-                    resultCard.className = 'result-card real-news';
-                    resultIcon.className = 'fas fa-check-circle result-icon real-icon';
-                    resultText.className = 'result-text real-text';
-                    resultText.textContent = 'REAL NEWS';
-                    resultDescription.textContent = 'This content appears to be credible and factual.';
-                    
-                    confidenceFill.className = 'confidence-fill real-fill';
-                    confidenceFill.style.width = confidence + '%';
-                    
-                    // Hide warning
-                    warningBox.style.display = 'none';
-                }
-                
-                // Update confidence value
-                confidenceValue.textContent = confidence + '%';
-                
-                // Update scores
-                realScore.textContent = realPercentage + '%';
-                fakeScore.textContent = fakePercentage + '%';
-                
-                // Update analysis details
-                contentLength.textContent = content.length;
-                sentiment.textContent = generateRandomSentiment();
-                subjectivity.textContent = generateRandomSubjectivity();
-            }
-            
-            function generateFakeNewsWarning() {
-                const warnings = [
-                    "This content shows characteristics commonly associated with misinformation. Please verify with trusted sources before sharing.",
-                    "Multiple red flags detected. Cross-reference this information with established news outlets.",
-                    "Analysis suggests potential bias or misleading information. Exercise caution when interpreting this content.",
-                    "This content matches patterns of known misinformation campaigns. Verify facts before believing or sharing."
-                ];
-                return warnings[Math.floor(Math.random() * warnings.length)];
-            }
-            
-            function generateRandomSentiment() {
-                const sentiments = ['Positive', 'Neutral', 'Negative', 'Mixed'];
-                return sentiments[Math.floor(Math.random() * sentiments.length)];
-            }
-            
-            function generateRandomSubjectivity() {
-                const levels = ['Very Objective', 'Objective', 'Neutral', 'Subjective', 'Very Subjective'];
-                return levels[Math.floor(Math.random() * levels.length)];
-            }
-        });
-    </script>
+   
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newsText = document.getElementById('newsText');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const defaultMessage = document.getElementById('defaultMessage');
+    const resultContainer = document.getElementById('resultContainer');
+    const resultCard = document.getElementById('resultCard');
+    const resultIcon = document.getElementById('resultIcon');
+    const resultText = document.getElementById('resultText');
+    const resultDescription = document.getElementById('resultDescription');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const confidenceValue = document.getElementById('confidenceValue');
+    const warningBox = document.getElementById('warningBox');
+    const warningText = document.getElementById('warningText');
+    const realScore = document.getElementById('realScore');
+    const fakeScore = document.getElementById('fakeScore');
+    const contentLength = document.getElementById('contentLength');
+    const sentiment = document.getElementById('sentiment');
+    const subjectivity = document.getElementById('subjectivity');
+
+    // --- Click event to submit form ---
+    analyzeBtn.addEventListener('click', function() {
+        const newsContent = newsText.value.trim();
+
+        if (!newsContent) {
+            alert('Please enter some news content to analyze.');
+            return;
+        }
+
+        if (newsContent.length < 50) {
+            alert('Please enter at least 50 characters for accurate analysis.');
+            return;
+        }
+
+        // Submit form to Django
+        this.closest('form').submit();
+    });
+
+    // --- Function to update result display ---
+    function updateResults(isFake, confidence, realPercentage, fakePercentage, content) {
+        const friendlyConfidence = Math.round(confidence * 100);
+        const friendlyFake = Math.round(fakePercentage * 100);
+        const friendlyReal = Math.round(realPercentage * 100);
+
+        if (isFake) {
+            resultCard.className = 'result-card fake-news';
+            resultIcon.className = 'fas fa-exclamation-triangle result-icon fake-icon';
+            resultText.className = 'result-text fake-text';
+            resultText.textContent = 'FAKE NEWS';
+            resultDescription.textContent = 'This content shows signs of potential misinformation.';
+
+            confidenceFill.className = 'confidence-fill fake-fill';
+            confidenceFill.style.width = friendlyConfidence + '%';
+
+            warningBox.style.display = 'block';
+            warningText.textContent = generateFakeNewsWarning();
+        } else {
+            resultCard.className = 'result-card real-news';
+            resultIcon.className = 'fas fa-check-circle result-icon real-icon';
+            resultText.className = 'result-text real-text';
+            resultText.textContent = 'REAL NEWS';
+            resultDescription.textContent = 'This content appears to be credible and factual.';
+
+            confidenceFill.className = 'confidence-fill real-fill';
+            confidenceFill.style.width = friendlyConfidence + '%';
+
+            warningBox.style.display = 'none';
+        }
+
+        confidenceValue.textContent = friendlyConfidence + '%';
+        realScore.textContent = friendlyReal + '%';
+        fakeScore.textContent = friendlyFake + '%';
+        contentLength.textContent = content.length;
+    //     sentiment.textContent = generateRandomSentiment();
+    //     subjectivity.textContent = generateRandomSubjectivity();
+    }
+
+    function generateFakeNewsWarning() {
+        const warnings = [
+            "This content shows characteristics commonly associated with misinformation. Please verify with trusted sources before sharing.",
+            "Multiple red flags detected. Cross-reference this information with established news outlets.",
+            "Analysis suggests potential bias or misleading information. Exercise caution when interpreting this content.",
+            "This content matches patterns of known misinformation campaigns. Verify facts before believing or sharing."
+        ];
+        return warnings[Math.floor(Math.random() * warnings.length)];
+    }
+
+    // function generateRandomSentiment() {
+    //     const sentiments = ['Positive', 'Neutral', 'Negative', 'Mixed'];
+    //     return sentiments[Math.floor(Math.random() * sentiments.length)];
+    // }
+
+    // function generateRandomSubjectivity() {
+    //     const levels = ['Very Objective', 'Objective', 'Neutral', 'Subjective', 'Very Subjective'];
+    //     return levels[Math.floor(Math.random() * levels.length)];
+    // }
+
+    // --- Run if result exists after POST ---
+    {% if result %}
+        updateResults(
+            {{ result.is_fake|yesno:"true,false" }},
+            {{ result.confidence|default:0 }},
+            {{ result.real_probability|default:0 }},
+            {{ result.fake_probability|default:0 }},
+            "{{ request.POST.news_text|escapejs }}"
+        );
+        defaultMessage.style.display = 'none';
+        resultContainer.style.display = 'block';
+    {% endif %}
+});
+</script>
+
+
+
 </body>
 </html>

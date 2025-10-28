@@ -1,0 +1,89 @@
+# 🐍 Python compiled files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pkl
+*.pickle
+
+# 🧠 Machine Learning and Deep Learning files
+*.h5
+*.hdf5
+*.ckpt
+*.tflite
+*.onnx
+*.joblib
+*.npz
+*.npy
+*.model
+*.weights
+*.bin
+
+# 📊 Large data files (you can upload small sample datasets manually)
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.json
+*.parquet
+*.zip
+*.tar
+*.gz
+
+# 🧮 Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# 🧠 Virtual Environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+__env__/
+
+# 🧱 Django specific
+db.sqlite3
+media/
+staticfiles/
+*.log
+*.pot
+*.pyproj
+*.sublime-project
+*.sublime-workspace
+
+# 🔒 Environment & secret files
+*.env
+.env.local
+secrets.json
+credentials.json
+config.json
+
+# 🧰 IDE / Editor specific
+.vscode/
+.idea/
+*.swp
+*.bak
+*.tmp
+
+# 🧾 System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 🚀 PyCharm, VSCode settings
+*.code-workspace
+*.iml
+__MACOSX/
+
+# 🧩 TensorBoard logs
+runs/
+logs/
+tensorboard/
+
+# 🧪 Model training outputs
+checkpoints/
+outputs/
+results/
+models/
+saved_models/
