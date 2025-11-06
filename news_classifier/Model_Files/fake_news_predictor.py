@@ -1,38 +1,43 @@
 import os
-import re
 import joblib
+import re
 import contractions
-import pandas as pd
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from news_classifier.Model_Files import nltk_downloader  # ensures nltk data downloaded
+from news_classifier.Model_Files import nltk_downloader
 
 # -------------------- Configuration --------------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
 # Add local nltk_data path
 nltk_data_path = os.path.join(os.getcwd(), "nltk_data")
 nltk.data.path.append(nltk_data_path)
 
-# -------------------- Load Model and TF-IDF --------------------
+# Load model and TF-IDF vectorizer
 model = joblib.load(os.path.join(BASE_DIR, "fake_news_model.pkl"))
 tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf_vectorizer.pkl"))
 
-# -------------------- Preprocessing Components --------------------
-# Ensure stopwords are available
+
+# Download only if missing
 try:
     stop_words = set(stopwords.words('english'))
 except LookupError:
     nltk.download('stopwords', download_dir=nltk_data_path)
     stop_words = set(stopwords.words('english'))
 
+
 lemmatizer = WordNetLemmatizer()
 
 # -------------------- Text Preprocessing --------------------
 def preprocess_text(text):
     """
-    Clean and normalize text before prediction.
+    Preprocess news text exactly as done during training:
+    1. Lowercase
+    2. Remove punctuation/special characters
+    3. Expand contractions
+    4. Remove stopwords
+    5. Remove short words (<3 chars)
+    6. Lemmatization
     """
     text = text.lower()
     text = re.sub(r'[^a-z\s]', '', text)
@@ -44,37 +49,68 @@ def preprocess_text(text):
 # -------------------- Prediction Function --------------------
 def predict_fake_news(text):
     """
-    Predict whether a given news article is fake or real.
+    Predict whether a single news article is FAKE or REAL.
+    
+    Returns a dictionary suitable for Django views:
+    {
+        'prediction': 0 or 1,
+        'prediction_label': 'REAL NEWS' or 'FAKE NEWS',
+        'is_fake': True/False,
+        'fake_probability': float,
+        'real_probability': float,
+        'confidence': float
+    }
     """
+    # Preprocess
     cleaned_text = preprocess_text(text)
+    
+    # Transform with TF-IDF
     text_tfidf = tfidf.transform([cleaned_text])
+    
+    # Predict class
     prediction = model.predict(text_tfidf)[0]
-
+    
+    # Predict probabilities
     try:
         prob = model.predict_proba(text_tfidf)[0]
-        fake_prob, real_prob = prob[1], prob[0]
+        fake_prob = prob[1]  # Probability of being fake
+        real_prob = prob[0]  # Probability of being real
         confidence = max(prob)
-    except Exception:
-        fake_prob = real_prob = confidence = "N/A"
-
+    except:
+        fake_prob = "N/A"
+        real_prob = "N/A"
+        confidence = "N/A"
+    
+    # Map prediction
     result_label = "FAKE NEWS" if prediction == 1 else "REAL NEWS"
-    is_fake = prediction == 1
-
+    is_fake = True if prediction == 1 else False
+    
     return {
         'prediction': int(prediction),
         'prediction_label': result_label,
-        'is_fake': is_fake,
+        'is_fake': int(is_fake),
         'fake_probability': fake_prob,
         'real_probability': real_prob,
         'confidence': confidence,
     }
 
-# -------------------- Test Section --------------------
+# -------------------- Test Dummy News --------------------
 if __name__ == "__main__":
     dummy_news = "Breaking: Scientists discovered a new planet in our solar system that could support life!"
+    
     result = predict_fake_news(dummy_news)
-
+    
     print("🔍 FAKE NEWS DETECTION RESULT")
     print("=" * 50)
-    print(f"Prediction: {result['prediction_label']} ({result['confidence']})")
-    print("🚨 FAKE" if result['is_fake'] else "✅ REAL")
+    print(f"Input Text: {dummy_news}")
+    print(f"Prediction: {result['prediction']} ({result['prediction_label']})")
+    print(f"Is Fake: {result['is_fake']}")
+    if result['confidence'] != "N/A":
+        print(f"Confidence: {result['confidence']:.4f}")
+        print(f"Fake Probability: {result['fake_probability']:.4f}")
+        print(f"Real Probability: {result['real_probability']:.4f}")
+    
+    if result['is_fake']:
+        print("🚨 WARNING: This appears to be FAKE NEWS!")
+    else:
+        print("✅ This appears to be REAL NEWS!")
