@@ -3,6 +3,7 @@ import joblib
 import re
 import contractions
 import pandas as pd
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
@@ -14,7 +15,16 @@ model = joblib.load(os.path.join(BASE_DIR, "fake_news_model.pkl"))
 tfidf = joblib.load(os.path.join(BASE_DIR, "tfidf_vectorizer.pkl"))
 
 # Initialize preprocessing components
-stop_words = set(stopwords.words('english'))
+# stop_words = set(stopwords.words('english'))
+
+# Download only if missing
+try:
+    stop_words = set(stopwords.words('english'))
+except LookupError:
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
+
+
 lemmatizer = WordNetLemmatizer()
 
 # -------------------- Text Preprocessing --------------------
